@@ -86,3 +86,47 @@ exports.login = async (req, res, next) => {
             });
          })
 }
+
+exports.update = async (req, res, next) => {
+    const temp = {};
+    const { id } = req.params;
+    console.log(req.body.avisChecked);
+    req.body.avisChecked=req.body.avisChecked.toString();
+    console.log(req.body.avisChecked);
+
+    ({
+        name: temp.name,
+        prenom: temp.prenom,
+        jobTitle: temp.jobTitle,
+        companyName: temp.companyName,
+        mobile: temp.mobile,
+        email: temp.email,
+        backgroundColor: temp.backgroundColor,
+        buttonColor: temp.buttonColor,
+        iconColor: temp.iconColor,
+        textColor: temp.textColor,
+        blocks: temp.blocks,
+        cssImages: temp.cssImages,
+        avisUrl:temp.avisUrl,
+        avisText:temp.avisText,
+        avisChecked:temp.avisChecked
+    } = req.body);
+
+    try {
+        let user = await userContactini.findById(id);
+        if (user) {       
+            Object.keys(temp).forEach((key) => {
+                if (!!temp[key]) {
+                    user[key] = temp[key];
+                }
+            });
+            
+            await user.save();
+            return res.status(201).json(user);
+        }
+
+        return res.status(404).json('user_not_found');
+    } catch (error) {
+        return res.status(501).json(error);
+    }
+}
