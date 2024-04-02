@@ -1,4 +1,6 @@
 const userContactini = require('../../models/userContactini');
+const bcrypt   = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 exports.add = async (req, res, next) => {
     const temp = {};
@@ -44,4 +46,43 @@ exports.getById = async (req, res, next) => {
     } catch (error) {
         return res.status(501).json(error);
     }
+}
+
+exports.login = async (req, res, next) => {
+    let fetchedUser;
+    userContactini.findOne({ emailConnexion:req.body.emailConnexion })
+        .then(user=>{
+            if(!user){
+                return res.status(401).json({
+                    message:"User Auth failed"
+                });
+            }
+            fetchedUser=user;
+            return bcrypt.compare(req.body.password, user.password);
+        })
+        .then(result=>{
+            if(!result){
+                return res.status(401).json({
+                    message:"Result Auth failed"
+                });
+            }
+
+            const token = jwt.sign(
+                {emailConnexion: fetchedUser.emailConnexion, userId: fetchedUser._id}, 
+                'secret_this_should_be_longer', 
+                {expiresIn: "1h" }
+                );
+           return res.status(200).json({
+                token:token,
+                expiresIn:3600,
+                userId: fetchedUser._id,
+                userEmail:fetchedUser.emailConnexion
+            });
+
+        }).catch (err => {
+            console.log(err);
+            return res.status(401).json({
+                message:"catch Auth failed"
+            });
+         })
 }
