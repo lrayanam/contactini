@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 const Schema   = mongoose.Schema;
 const bcrypt   = require('bcryptjs');
+const crypto= require('crypto'); 
 
-const contactiniUser = new Schema({
+const userContactini = new Schema({
     name: {
         type    : String,
         trim    : true,
@@ -92,7 +93,7 @@ const contactiniUser = new Schema({
         required: false
     },
 
-    resetPasswordExpires: {
+    resetPasswordExpire: {
         type: Date,
         required: false
     }
@@ -101,7 +102,7 @@ const contactiniUser = new Schema({
 });
 
 // hook executé avant la sauvegarde d'un document. Hash le mot de passe quand il est modifié
-contactiniUser.pre('save', function(next) {
+userContactini.pre('save', function(next) {
     if (!this.isModified('password')) {
         return next();
     }
@@ -111,4 +112,11 @@ contactiniUser.pre('save', function(next) {
     next();
 });
 
-module.exports = mongoose.model('contactiniUser', contactiniUser);
+userContactini.methods.getResetPasswordToken = function() {
+    const resetToken= crypto.randomBytes(20).toString('hex');
+    this.resetPasswordToken= crypto.createHash('sha256').update(resetToken).digest('hex');
+    this.resetPasswordExpire = Date.now() + 3600000; //expires in an hour
+    return resetToken;
+};
+
+module.exports = mongoose.model('userContactini', userContactini);

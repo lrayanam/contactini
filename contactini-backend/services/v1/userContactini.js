@@ -132,9 +132,40 @@ exports.update = async (req, res, next) => {
     }
 }
 
-exports.resetPassword = async (req, res, next) => {
+exports.forgotPassword = async (req, res, next) => {
+
+    const user = await userContactini.findOne({ emailConnexion: req.body.emailConnexion });
+    if(!user){
+        return next(new Error('There is no user with that email',403))
+    }
+    const resetToken = user.getResetPasswordToken();
+
+    await user.save({ validateBeforeSave: false})
+
+    const restUrl= `https://${req.get('host')}/#/auth/password/reset/${resetToken}`;
     
-    console.log(req.params.resetToken)
+    const message = `Bonjour,\n\n Vous avez demandé à réinitialiser votre mot de passe. Retrouvez les accès à votre compte Contactini en cliquant sur le lien ci-dessous.  \n\n ${restUrl} \n\n A bientôt, \n\n L'équipe Contactini \n\n\n P.S. : Si vous n'êtes pas à l'initiative de cette demande, nous vous prions de ne pas tenir compte de cet email.`
+    
+    try {
+        // await sendEmail({
+        // email: user.emailConnexion,
+        // subject: 'Contactini - Renouvellement de votre mot de passe',
+        // message
+        // })
+        res.status(200).json({ status:200, data:'Email sent : '+ restUrl });
+        } catch (error) {
+        console.log(error);
+        user.getResetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+        await user.save({ validateBeforeSave: false })
+        res.status(500).json({
+            status:500,
+            message:'Email could not be sent.',
+        });
+        }
+}
+
+exports.resetPassword = async (req, res, next) => {
     const resetPasswordToken = crypto
     .createHash('sha256')
     .update(req.params.resetToken)
@@ -143,7 +174,6 @@ exports.resetPassword = async (req, res, next) => {
         resetPasswordToken,
         resetPasswordExpire: { $gt: Date.now() }
         });
-
         if (!user){
             res.status(201).json({
                 status:500,
