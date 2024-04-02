@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const contactiniRoute = require('./userContactini');
 
 router.get('/', async (req, res) => {
     res.status(200).json({
@@ -10,4 +11,5 @@ router.get('/', async (req, res) => {
     });
 });
 
+router.use('/contactinis', contactiniRoute);
 module.exports = router;
