@@ -1,0 +1,41 @@
+<mat-sidenav-container class="sidenav-container">
+    <mat-sidenav-content>
+      <mat-toolbar *ngIf="showMenu">
+        <div>
+          <a routerLink="/">
+          <img width="150px" href="https://contactini.fr" src="assets/img/contactini-black.png" alt="Digital Card">
+        </a>  
+        </div>       
+  
+        <span class="right-align"></span>
+          
+      <button 
+        type="button"
+        aria-label="Toggle sidenav"
+        mat-icon-button
+        [matMenuTriggerFor]="menu"
+        *ngIf="isHandset$ | async">
+          <mat-icon class="material-icons-outlined" aria-label="Side nav toggle icon">account_circle</mat-icon>
+        </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item><a href="https://contactini.fr" target="_blank">Acheter une carte</a></button>
+                <button *ngIf="userIsAuth" routerLink="/account/profile" mat-menu-item><a>Profil</a></button>
+                <button *ngIf="userIsAuth" routerLink="/auth/password" mat-menu-item><a>Changer mot de passe</a></button>
+                <button *ngIf="userIsAuth" (click)="onLogout()" mat-menu-item><a>Déconnexion</a></button>
+                  </mat-menu>
+  
+        <div *ngIf="isWeb$ | async" class="navigation-items">  
+            <a href="https://contactini.fr"  class="btn btn-bordered-gray" style = " margin-right: 20px;" >Acheter une carte</a>
+            <a *ngIf="userIsAuth" routerLink="/account/profile" class="btn btn-bordered-gray" style = " margin-right: 20px;" >Profil</a>
+            <a *ngIf="userIsAuth" routerLink="/auth/password" class="btn btn-bordered-gray" style = " margin-right: 20px;"  >Changer mot de passe</a>
+            <a *ngIf="userIsAuth" routerLink="/" class="btn btn-bordered-gray" (click)="onLogout()" >Déconnexion</a>
+        </div>
+  
+      </mat-toolbar>
+      <!-- Add Content Here -->
+      <ng-content></ng-content>
+      <app-footer *ngIf="showMenu"></app-footer>
+    </mat-sidenav-content>
+  
+  </mat-sidenav-container>
+  
