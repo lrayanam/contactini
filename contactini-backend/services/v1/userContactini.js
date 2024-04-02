@@ -1,6 +1,7 @@
 const userContactini = require('../../models/userContactini');
 const bcrypt   = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto= require('crypto'); 
 
 exports.add = async (req, res, next) => {
     const temp = {};
@@ -129,4 +130,36 @@ exports.update = async (req, res, next) => {
     } catch (error) {
         return res.status(501).json(error);
     }
+}
+
+exports.resetPassword = async (req, res, next) => {
+    
+    console.log(req.params.resetToken)
+    const resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(req.params.resetToken)
+    .digest('hex');
+    const user = await userContactini.findOne({
+        resetPasswordToken,
+        resetPasswordExpire: { $gt: Date.now() }
+        });
+
+        if (!user){
+            res.status(201).json({
+                status:500,
+                message:'Token is expired.',
+            });
+        }
+        else {
+            user.password = req.body.password;
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpire = undefined;
+            await user.save();
+            return res.status(201).json({
+                status:201,
+                message:'Password changed',
+                id: user._id
+            });
+        }
+  
 }
