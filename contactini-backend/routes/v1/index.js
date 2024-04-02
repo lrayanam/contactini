@@ -1,8 +1,6 @@
 var express = require('express');
 var router = express.Router();
 
-const userRoute = require('./user');
-
 router.get('/', async (req, res) => {
     res.status(200).json({
         name   : 'API', 
@@ -12,5 +10,4 @@ router.get('/', async (req, res) => {
     });
 });
 
-router.use('/users', userRoute);
 module.exports = router;
