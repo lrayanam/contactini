@@ -37,9 +37,8 @@ exports.add = async (req, res, next) => {
 exports.getById = async (req, res, next) => {
     const { id } = req.params;
     try {
-        let user = await userContactini.findById(id);
+        let user = await userContactini.findById(id).select('-password');
         if (user) {
-            user['password'] = "";
             return res.status(200).json([user]);
         }
 
@@ -51,42 +50,43 @@ exports.getById = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
     let fetchedUser;
-    userContactini.findOne({ emailConnexion:req.body.emailConnexion })
-        .then(user=>{
-            if(!user){
-                return res.status(401).json({
-                    message:"User Auth failed"
-                });
-            }
-            fetchedUser=user;
-            return bcrypt.compare(req.body.password, user.password);
-        })
-        .then(result=>{
-            if(!result){
-                return res.status(401).json({
-                    message:"Result Auth failed"
-                });
-            }
-
-            const token = jwt.sign(
-                {emailConnexion: fetchedUser.emailConnexion, userId: fetchedUser._id}, 
-                'secret_this_should_be_longer', 
-                {expiresIn: "1h" }
-                );
-           return res.status(200).json({
-                token:token,
-                expiresIn:3600,
-                userId: fetchedUser._id,
-                userEmail:fetchedUser.emailConnexion
-            });
-
-        }).catch (err => {
-            console.log(err);
+    try {
+        fetchedUser = await userContactini.findOne({ emailConnexion: req.body.emailConnexion });
+        
+        if (!fetchedUser) {
             return res.status(401).json({
-                message:"catch Auth failed"
+                message: "User Auth failed"
             });
-         })
+        }
+
+        const result = await bcrypt.compare(req.body.password, fetchedUser.password);
+
+        if (!result) {
+            return res.status(401).json({
+                message: "Result Auth failed"
+            });
+        }
+
+        const token = jwt.sign(
+            { emailConnexion: fetchedUser.emailConnexion, userId: fetchedUser._id },
+            'secret_this_should_be_longer',
+            { expiresIn: "1h" }
+        );
+
+        return res.status(200).json({
+            token: token,
+            expiresIn: 3600,
+            userId: fetchedUser._id,
+            userEmail: fetchedUser.emailConnexion
+        });
+    } catch (err) {
+        console.log(err);
+        return res.status(401).json({
+            message: "catch Auth failed"
+        });
+    }
 }
+
 
 exports.update = async (req, res, next) => {
     const temp = {};
