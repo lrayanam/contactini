@@ -73,7 +73,7 @@ const userContactini = new Schema({
         trim     : true,
     },
     avisChecked: {
-        type     : String,
+        type     : Boolean,
         trim     : true,
     },
     password: {

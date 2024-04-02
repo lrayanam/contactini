@@ -91,10 +91,6 @@ exports.login = async (req, res, next) => {
 exports.update = async (req, res, next) => {
     const temp = {};
     const { id } = req.params;
-    console.log(req.body.avisChecked);
-    req.body.avisChecked=req.body.avisChecked.toString();
-    console.log(req.body.avisChecked);
-
     ({
         name: temp.name,
         prenom: temp.prenom,
