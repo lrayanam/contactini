@@ -89,40 +89,36 @@ exports.login = async (req, res, next) => {
 
 
 exports.update = async (req, res, next) => {
-    const temp = {};
     const { id } = req.params;
-    ({
-        name: temp.name,
-        prenom: temp.prenom,
-        jobTitle: temp.jobTitle,
-        companyName: temp.companyName,
-        mobile: temp.mobile,
-        email: temp.email,
-        backgroundColor: temp.backgroundColor,
-        buttonColor: temp.buttonColor,
-        iconColor: temp.iconColor,
-        textColor: temp.textColor,
-        blocks: temp.blocks,
-        cssImages: temp.cssImages,
-        avisUrl:temp.avisUrl,
-        avisText:temp.avisText,
-        avisChecked:temp.avisChecked
-    } = req.body);
 
     try {
         let user = await userContactini.findById(id);
-        if (user) {       
-            Object.keys(temp).forEach((key) => {
-                if (!!temp[key]) {
-                    user[key] = temp[key];
-                }
-            });
-            
-            await user.save();
-            return res.status(201).json(user);
+        if (!user) {
+            return res.status(404).json('user_not_found');
         }
+        const temp = {
+            name: req.body.name,
+            prenom: req.body.prenom,
+            jobTitle: req.body.jobTitle,
+            companyName: req.body.companyName,
+            mobile: req.body.mobile,
+            email: req.body.email,
+            backgroundColor: req.body.backgroundColor,
+            buttonColor: req.body.buttonColor,
+            iconColor: req.body.iconColor,
+            textColor: req.body.textColor,
+            blocks: req.body.blocks,
+            cssImages: req.body.cssImages,
+            avisUrl: req.body.avisUrl,
+            avisText: req.body.avisText,
+            avisChecked: req.body.avisChecked
+        };
 
-        return res.status(404).json('user_not_found');
+        // Copiez les propriétés non-nulles de temp dans user
+        Object.assign(user, temp);
+
+        await user.save();
+        return res.status(201).json(user);
     } catch (error) {
         return res.status(501).json(error);
     }
