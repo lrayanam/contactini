@@ -3,8 +3,6 @@ const userContactini = require('../../models/userContactini');
 exports.add = async (req, res, next) => {
     const temp = {};
     const url = req.protocol + '://' + req.get("host");
-
-
     ({ 
         emailConnexion: temp.emailConnexion,
         password : temp.password,
@@ -28,6 +26,21 @@ exports.add = async (req, res, next) => {
         let user = await userContactini.create(temp);
 
         return res.status(201).json(user);
+    } catch (error) {
+        return res.status(501).json(error);
+    }
+}
+
+exports.getById = async (req, res, next) => {
+    const { id } = req.params;
+    try {
+        let user = await userContactini.findById(id);
+        if (user) {
+            user['password'] = "";
+            return res.status(200).json([user]);
+        }
+
+        return res.status(404).json('user_not_found');
     } catch (error) {
         return res.status(501).json(error);
     }
