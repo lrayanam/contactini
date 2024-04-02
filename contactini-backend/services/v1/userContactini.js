@@ -193,3 +193,59 @@ exports.resetPassword = async (req, res, next) => {
         }
   
 }
+
+exports.updateImagePdp = async (req, res, next) => {
+    const url = req.protocol + '://' + req.get("host");
+        const { id } = req.params;
+        try {
+            let user = await userContactini.findById(id);
+            if (user) {         
+                if(user['imagePdp']!=''){
+                    if(user['imagePdp'].indexOf('defaut-profil.png')==-1){                
+                    let imgurl = user['imagePdp'];             
+                    fs.unlink(imgurl.replace(url, "./"), (err) => {
+                        if (err) {
+                            throw err;
+                        }
+                        console.log("Delete File successfully.");
+                    });
+                    }
+                }
+    
+                user['imagePdp']= url + "/images/" + req.file.filename;
+                await user.save();
+                return res.status(201).json(user);
+            }
+            return res.status(404).json('user_not_found');
+        } catch (error) {
+            return res.status(501).json(error);
+        }
+}
+
+exports.updateImageHdp = async (req, res, next) => {
+    const url = req.protocol + '://' + req.get("host");
+        const { id } = req.params;
+        try {
+            let user = await userContactini.findById(id);
+            if (user) {  
+                if(user['imageHdp']!=''){
+                    if(user['imageHdp'].indexOf('defaut-logo.png')==-1) {                
+                        let imgurl = user['imageHdp'];             
+                        fs.unlink(imgurl.replace(url, "./"), (err) => {
+                            if (err) {
+                                throw err;
+                            }
+                            console.log("Delete File successfully.");
+                        });
+                    }
+                }
+                user['imageHdp']= url + "/images/" + req.file.filename;
+                await user.save();
+                return res.status(201).json(user);
+            }
+            return res.status(404).json('user_not_found');
+        } catch (error) {
+            return res.status(501).json(error);
+        }
+}
+
